@@ -39,3 +39,10 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Higgsfield skills
+.agents/
+skills-lock.json
+
+# Generation scripts output
+scripts/*.log
