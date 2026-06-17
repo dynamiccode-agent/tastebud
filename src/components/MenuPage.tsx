@@ -143,7 +143,7 @@ export function MenuPage({ venue, categories, items }: Props) {
               key={cat.id}
               data-cat={cat.id}
               onClick={() => scrollToCategory(cat.id)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold tracking-wide transition-all ${
+              className={`flex-shrink-0 px-4 py-2 rounded-full text-[11px] font-semibold uppercase tracking-widest transition-all ${
                 activeCategory === cat.id
                   ? 'bg-black text-white shadow-sm scale-105'
                   : 'bg-white/70 text-black'
