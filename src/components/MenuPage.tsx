@@ -1,9 +1,10 @@
 'use client'
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useCart } from '@/store/cart'
 import { useRouter } from 'next/navigation'
 import { Logo } from './Logo'
 import { ItemModal } from './ItemModal'
+import { AddedToast } from './AddedToast'
 import { formatPrice } from '@/lib/utils'
 import { ShoppingCart, UtensilsCrossed } from 'lucide-react'
 
@@ -36,6 +37,13 @@ export function MenuPage({ venue, categories, items }: Props) {
   const router = useRouter()
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null)
   const [activeCategory, setActiveCategory] = useState(categories[0]?.id || '')
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [badgeBounce, setBadgeBounce] = useState(0)
+
+  const handleItemAdded = useCallback((name: string) => {
+    setToastMessage(name + ' added to cart')
+    setBadgeBounce(n => n + 1)
+  }, [])
 
   function scrollToCategory(catId: string) {
     setActiveCategory(catId)
@@ -78,7 +86,10 @@ export function MenuPage({ venue, categories, items }: Props) {
           >
             <ShoppingCart className="w-5 h-5 text-black" />
             {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black leading-none">
+              <span
+                key={badgeBounce}
+                className="absolute -top-0.5 -right-0.5 bg-black text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black leading-none animate-bounce"
+              >
                 {itemCount}
               </span>
             )}
@@ -160,11 +171,15 @@ export function MenuPage({ venue, categories, items }: Props) {
         </div>
       )}
 
+      {/* Toast */}
+      <AddedToast message={toastMessage} onDone={() => setToastMessage(null)} />
+
       {/* Item Modal */}
       {selectedItem && (
         <ItemModal
           item={selectedItem}
           onClose={() => setSelectedItem(null)}
+          onAdded={handleItemAdded}
         />
       )}
     </div>

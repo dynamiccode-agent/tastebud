@@ -21,9 +21,10 @@ type MenuItem = {
 interface Props {
   item: MenuItem
   onClose: () => void
+  onAdded?: (itemName: string) => void
 }
 
-export function ItemModal({ item, onClose }: Props) {
+export function ItemModal({ item, onClose, onAdded }: Props) {
   const { addItem } = useCart()
   const [quantity, setQuantity] = useState(1)
   const [removed, setRemoved] = useState<string[]>([])
@@ -57,6 +58,7 @@ export function ItemModal({ item, onClose }: Props) {
       customisations: { removed, added },
       notes,
     })
+    onAdded?.(item.name)
     onClose()
   }
 

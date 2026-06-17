@@ -9,11 +9,13 @@ export async function POST(req: NextRequest) {
 
   const subtotal = total
   const amountInCents = Math.round(total * 100)
+  // customerName may be empty on pre-warm — fill in later via confirm-order
+  const nameForRecord = customerName?.trim() || 'Guest'
 
   const paymentIntent = await stripe.paymentIntents.create({
     amount: amountInCents,
     currency: 'aud',
-    metadata: { venueId, tableNumber, customerName },
+    metadata: { venueId, tableNumber, customerName: nameForRecord },
   })
 
   // Create order in DB
@@ -21,7 +23,7 @@ export async function POST(req: NextRequest) {
     venueId,
     tableId: tableId || null,
     tableNumber,
-    customerName,
+    customerName: nameForRecord,
     customerPhone: customerPhone || null,
     status: 'new',
     paymentStatus: 'pending',
