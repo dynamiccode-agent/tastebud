@@ -65,17 +65,21 @@ export function ItemModal({ item, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-end">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
-      {/* Sheet */}
-      <div className="relative w-full max-w-md mx-auto bg-white rounded-t-3xl overflow-hidden max-h-[90vh] flex flex-col">
-        {/* Image */}
-        <div className="aspect-video bg-orange-50 flex items-center justify-center flex-shrink-0">
+      {/* Sheet — full height with top gap for visual context */}
+      <div className="relative w-full max-w-md mx-auto bg-white rounded-t-3xl overflow-hidden flex flex-col" style={{ height: '92dvh' }}>
+        {/* Image — taller hero */}
+        <div className="relative w-full flex-shrink-0" style={{ height: '42%' }}>
           {item.image ? (
             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
           ) : (
-            <UtensilsCrossed className="w-16 h-16 text-orange-200" />
+            <div className="w-full h-full bg-orange-50 flex items-center justify-center">
+              <UtensilsCrossed className="w-20 h-20 text-orange-200" />
+            </div>
           )}
+          {/* Gradient fade into content below */}
+          <div className="absolute bottom-0 inset-x-0 h-16 bg-gradient-to-t from-white to-transparent" />
         </div>
 
         <button
