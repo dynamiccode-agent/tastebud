@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useCart } from '@/store/cart'
 import { useRouter } from 'next/navigation'
 import { formatPrice } from '@/lib/utils'
-import { ArrowLeft, ShieldCheck, Loader2 } from 'lucide-react'
+import { ArrowLeft, ShieldCheck, Loader2, MapPin } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -117,7 +117,7 @@ export default function CheckoutPage() {
   const canPay = customerName.trim().length > 0 && (!hasAlcohol || alcoholConfirmed)
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-10">
+    <div className="min-h-dvh bg-gray-50 pb-10">
       {/* Header */}
       <div className="sticky top-0 z-10 px-4 py-4 flex items-center gap-3 shadow-sm bg-white">
         <button onClick={() => router.back()} className="p-2 -ml-2">
@@ -131,8 +131,8 @@ export default function CheckoutPage() {
 
         {/* Table */}
         <div className="rounded-2xl p-4 flex items-center gap-3" style={{ backgroundColor: '#FEF9D3', border: '1px solid #F9BA0B' }}>
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ backgroundColor: '#F9BA0B' }}>
-            📍
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: '#F9BA0B' }}>
+            <MapPin className="w-5 h-5 text-black" />
           </div>
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ordering from</p>
@@ -168,15 +168,15 @@ export default function CheckoutPage() {
             value={customerName}
             onChange={e => setCustomerName(e.target.value)}
             placeholder="Your name *"
-            className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none transition-colors"
-            style={{ borderColor: customerName ? '#F9BA0B' : undefined }}
+            className="w-full border-2 rounded-xl px-4 py-3 text-base outline-none transition-colors"
+            style={{ borderColor: customerName ? '#F9BA0B' : '#e5e7eb' }}
           />
           <input
             type="tel"
             value={customerPhone}
             onChange={e => setCustomerPhone(e.target.value)}
             placeholder="Phone number (optional)"
-            className="w-full border-2 border-gray-100 rounded-xl px-4 py-3 text-sm focus:outline-none"
+            className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base outline-none transition-colors focus:border-[#F9BA0B]"
           />
         </div>
 

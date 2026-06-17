@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next'
+import { Outfit } from 'next/font/google'
 import './globals.css'
 import { CartProvider } from '@/store/cart'
+
+const outfit = Outfit({ subsets: ['latin'], variable: '--font-outfit' })
 
 export const metadata: Metadata = {
   title: 'TasteBud — Order at your table',
@@ -15,10 +18,10 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={outfit.variable}>
       <body>
         <CartProvider>
-          <div className="min-h-screen max-w-md mx-auto bg-white">
+          <div className="min-h-dvh max-w-md mx-auto bg-white">
             {children}
           </div>
         </CartProvider>

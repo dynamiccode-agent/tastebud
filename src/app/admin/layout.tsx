@@ -3,7 +3,7 @@ import { Logo } from '@/components/Logo'
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gray-100 flex" style={{ maxWidth: '100%' }}>
+    <div className="min-h-dvh bg-gray-100 flex" style={{ maxWidth: '100%' }}>
       {/* Sidebar */}
       <div className="w-56 bg-white shadow-sm flex-shrink-0 flex flex-col">
         <div className="p-5 border-b border-gray-100">

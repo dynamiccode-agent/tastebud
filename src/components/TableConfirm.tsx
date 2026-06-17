@@ -26,15 +26,15 @@ export function TableConfirm({ venue, table, tableNumber }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-orange-50 flex flex-col">
+    <div className="min-h-dvh flex flex-col" style={{ backgroundColor: '#fffdf0' }}>
       <div className="flex items-center justify-center p-6 pt-12">
         <Logo size="lg" />
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center px-8 -mt-16">
         <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-sm">
-          <div className="flex items-center justify-center w-16 h-16 bg-orange-100 rounded-2xl mx-auto mb-6">
-            <MapPin className="w-8 h-8 text-orange-600" />
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl mx-auto mb-6" style={{ backgroundColor: '#F9BA0B' }}>
+            <MapPin className="w-8 h-8 text-black" />
           </div>
 
           <h1 className="text-2xl font-bold text-center text-gray-900 mb-1">
@@ -43,20 +43,21 @@ export function TableConfirm({ venue, table, tableNumber }: Props) {
 
           {!changing ? (
             <>
-              <p className="text-gray-500 text-center mb-2">You're ordering from</p>
-              <p className="text-3xl font-black text-orange-600 text-center mb-8">{displayTable}</p>
+              <p className="text-gray-500 text-center mb-2">You're at</p>
+              <p className="text-3xl font-black text-gray-900 text-center mb-8">{displayTable}</p>
 
               <button
                 onClick={handleConfirm}
-                className="w-full bg-orange-600 text-white py-4 rounded-2xl text-lg font-bold shadow-md active:scale-95 transition-transform mb-3"
+                className="w-full py-4 rounded-2xl text-base font-bold shadow-md active:scale-95 transition-transform mb-3 text-black"
+                style={{ backgroundColor: '#F9BA0B' }}
               >
-                Confirm — Start Ordering
+                Start Ordering
               </button>
               <button
                 onClick={() => setChanging(true)}
-                className="w-full text-gray-500 py-2 text-sm"
+                className="w-full text-gray-400 py-2 text-sm active:text-gray-600 transition-colors"
               >
-                Change table
+                Wrong table?
               </button>
             </>
           ) : (
@@ -67,19 +68,21 @@ export function TableConfirm({ venue, table, tableNumber }: Props) {
                 value={customTable}
                 onChange={e => setCustomTable(e.target.value)}
                 placeholder="e.g. 12"
-                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-lg text-center mb-4 focus:border-orange-500 outline-none"
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-lg text-center mb-4 outline-none transition-colors"
+                style={{ borderColor: customTable ? '#F9BA0B' : undefined }}
                 autoFocus
               />
               <button
                 onClick={handleConfirm}
                 disabled={!customTable.trim()}
-                className="w-full bg-orange-600 text-white py-4 rounded-2xl text-lg font-bold shadow-md active:scale-95 transition-transform disabled:opacity-40 mb-3"
+                className="w-full py-4 rounded-2xl text-base font-bold shadow-md active:scale-95 transition-transform disabled:opacity-40 mb-3 text-black"
+                style={{ backgroundColor: '#F9BA0B' }}
               >
                 Confirm Table
               </button>
               <button
                 onClick={() => setChanging(false)}
-                className="w-full text-gray-500 py-2 text-sm"
+                className="w-full text-gray-400 py-2 text-sm active:text-gray-600 transition-colors"
               >
                 Cancel
               </button>

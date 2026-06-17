@@ -11,13 +11,14 @@ export default function CartPage() {
 
   if (itemCount === 0) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-8">
-        <ShoppingBag className="w-20 h-20 text-orange-200 mb-4" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-        <p className="text-gray-400 mb-8">Add some items to get started</p>
+      <div className="min-h-dvh flex flex-col items-center justify-center p-8">
+        <ShoppingBag className="w-20 h-20 text-gray-200 mb-4" />
+        <h2 className="text-xl font-bold text-gray-900 mb-2">Nothing here yet</h2>
+        <p className="text-gray-400 mb-8">Browse the menu and add something delicious</p>
         <button
           onClick={() => router.back()}
-          className="bg-orange-600 text-white px-8 py-3 rounded-2xl font-semibold"
+          className="px-8 py-3 rounded-2xl font-semibold text-black"
+          style={{ backgroundColor: '#F9BA0B' }}
         >
           Browse Menu
         </button>
@@ -26,7 +27,7 @@ export default function CartPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-40">
+    <div className="min-h-dvh bg-gray-50 pb-40">
       {/* Header */}
       <div className="bg-white sticky top-0 z-10 px-4 py-4 flex items-center gap-3 shadow-sm">
         <button onClick={() => router.back()} className="p-2 -ml-2">
@@ -47,7 +48,7 @@ export default function CartPage() {
               <div key={item.id} className="bg-white rounded-2xl p-4 shadow-sm">
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-semibold text-gray-900">{item.name}</h3>
-                  <span className="font-bold text-orange-600">{formatPrice(itemTotal)}</span>
+                  <span className="font-bold" style={{ color: '#d4960a' }}>{formatPrice(itemTotal)}</span>
                 </div>
 
                 {item.customisations.removed.length > 0 && (
@@ -68,21 +69,25 @@ export default function CartPage() {
                   <div className="flex items-center gap-3">
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="w-8 h-8 rounded-full border-2 border-gray-200 flex items-center justify-center"
+                      aria-label="Decrease quantity"
+                      className="w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center active:bg-gray-100 transition-colors"
                     >
-                      <Minus className="w-3 h-3" />
+                      <Minus className="w-3.5 h-3.5" />
                     </button>
-                    <span className="font-bold">{item.quantity}</span>
+                    <span className="font-bold w-4 text-center tabular-nums">{item.quantity}</span>
                     <button
                       onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      className="w-8 h-8 rounded-full bg-orange-600 text-white flex items-center justify-center"
+                      aria-label="Increase quantity"
+                      className="w-11 h-11 rounded-full flex items-center justify-center active:opacity-80 transition-opacity"
+                      style={{ backgroundColor: '#F9BA0B' }}
                     >
-                      <Plus className="w-3 h-3" />
+                      <Plus className="w-3.5 h-3.5 text-black" />
                     </button>
                   </div>
                   <button
                     onClick={() => removeItem(item.id)}
-                    className="p-2 text-red-400"
+                    aria-label="Remove item"
+                    className="w-11 h-11 flex items-center justify-center text-red-300 active:text-red-500 transition-colors"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -100,7 +105,7 @@ export default function CartPage() {
           </div>
           <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-lg">
             <span>Total</span>
-            <span className="text-orange-600">{formatPrice(total)}</span>
+            <span style={{ color: '#d4960a' }}>{formatPrice(total)}</span>
           </div>
         </div>
       </div>
@@ -109,9 +114,11 @@ export default function CartPage() {
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-4 pb-6 safe-bottom z-30">
         <button
           onClick={() => router.push('/checkout')}
-          className="w-full bg-orange-600 text-white py-4 rounded-2xl font-bold text-lg shadow-2xl active:scale-95 transition-transform"
+          className="w-full py-4 rounded-2xl font-bold text-base shadow-2xl active:scale-95 transition-transform flex items-center justify-between px-6"
+          style={{ backgroundColor: '#F9BA0B', color: '#111' }}
         >
-          Checkout — {formatPrice(total)}
+          <span>Confirm Order</span>
+          <span>{formatPrice(total)}</span>
         </button>
       </div>
     </div>
