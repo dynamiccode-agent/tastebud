@@ -268,36 +268,56 @@ export function ItemModal({ item, onClose, onAdded }: Props) {
           <div className="h-1" />
         </div>
 
-        {/* 1. MERGED STICKY BOTTOM: qty controls + add to cart with live total */}
-        <div className="px-4 py-3 safe-bottom border-t border-gray-100 bg-white flex-shrink-0">
-          <div className="flex items-center gap-3">
-            {/* Quantity */}
-            <div className="flex items-center bg-gray-100 rounded-2xl px-1 py-1 gap-1 flex-shrink-0">
+        {/* STICKY BOTTOM: qty + add to cart */}
+        <div
+          className="px-4 py-3 safe-bottom bg-white flex-shrink-0"
+          style={{ borderTop: '2px solid #F9BA0B' }}
+        >
+          <div className="flex items-center gap-2.5">
+
+            {/* Quantity pill — dark, cohesive with button */}
+            <div
+              className="flex items-center rounded-2xl px-1 py-1 gap-0.5 flex-shrink-0"
+              style={{ backgroundColor: '#111' }}
+            >
               <button
                 onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform text-gray-800 font-black text-xl leading-none"
+                className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform text-white/70 hover:text-white text-xl font-light leading-none select-none"
               >
                 −
               </button>
-              <span className="text-base font-black w-7 text-center tabular-nums">{quantity}</span>
+              <span className="text-base font-black w-7 text-center tabular-nums text-white select-none">
+                {quantity}
+              </span>
               <button
                 onClick={() => setQuantity(q => q + 1)}
-                className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform font-black text-xl leading-none"
-                style={{ backgroundColor: '#F9BA0B' }}
+                className="w-9 h-9 rounded-xl flex items-center justify-center active:scale-90 transition-transform font-bold text-xl leading-none select-none"
+                style={{ backgroundColor: '#F9BA0B', color: '#111' }}
               >
                 +
               </button>
             </div>
 
-            {/* Add to cart — takes remaining width, price updates live */}
+            {/* Add to cart — dark, gold price, physical depth */}
             <button
               onClick={handleAdd}
-              className="flex-1 py-3.5 rounded-2xl font-black text-base active:scale-95 transition-transform flex items-center justify-between px-5 shadow-md"
-              style={{ backgroundColor: '#F9BA0B' }}
+              className="flex-1 rounded-2xl flex items-center justify-between px-5 select-none transition-all duration-100 active:scale-[0.97]"
+              style={{
+                background: 'linear-gradient(160deg, #1c1c1c 0%, #111111 100%)',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.28), 0 1px 4px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.06)',
+                paddingTop: '14px',
+                paddingBottom: '14px',
+              }}
             >
-              <span>Add to cart</span>
-              <span className="tabular-nums">{formatPrice(lineTotal)}</span>
+              <span className="text-white font-semibold text-base tracking-wide">Add to cart</span>
+              <span
+                className="font-black text-base tabular-nums"
+                style={{ color: '#F9BA0B' }}
+              >
+                {formatPrice(lineTotal)}
+              </span>
             </button>
+
           </div>
         </div>
       </div>
