@@ -1,7 +1,7 @@
 export const REWARDS = {
-  POINTS_PER_DOLLAR: 10,
-  REDEMPTION_RATE: 100,   // 100 pts = $1
-  MIN_POINTS: 500,         // minimum to redeem ($5 value)
+  POINTS_PER_DOLLAR: 1,   // $1 spent = 1 point
+  REDEMPTION_RATE: 1,      // 1 point = $1 off
+  MIN_POINTS: 5,            // minimum $5 in points to redeem
   MAX_DISCOUNT_PCT: 0.5,   // max 50% of order total
 } as const
 
@@ -10,7 +10,7 @@ export function calcPointsEarned(paidDollars: number): number {
 }
 
 export function pointsToDollars(points: number): number {
-  return Math.floor(points / REWARDS.REDEMPTION_RATE * 100) / 100
+  return points / REWARDS.REDEMPTION_RATE
 }
 
 export function dollarsToPoints(dollars: number): number {
