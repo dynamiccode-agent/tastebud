@@ -3,6 +3,16 @@ import { pgTable, text, uuid, integer, boolean, timestamp, jsonb, numeric, pgEnu
 export const orderStatusEnum = pgEnum('order_status', ['new', 'accepted', 'preparing', 'ready', 'completed', 'cancelled'])
 export const paymentStatusEnum = pgEnum('payment_status', ['pending', 'paid', 'failed', 'refunded'])
 
+export const customers = pgTable('customers', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  phone: text('phone').notNull().unique(),
+  name: text('name').notNull(),
+  email: text('email'),
+  totalPoints: integer('total_points').notNull().default(0),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+})
+
 export const venues = pgTable('venues', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
@@ -52,11 +62,15 @@ export const orders = pgTable('orders', {
   tableNumber: text('table_number').notNull(),
   customerName: text('customer_name').notNull(),
   customerPhone: text('customer_phone'),
+  customerId: uuid('customer_id').references(() => customers.id),
   status: orderStatusEnum('status').default('new'),
   paymentStatus: paymentStatusEnum('payment_status').default('pending'),
   paymentIntentId: text('payment_intent_id'),
   subtotal: numeric('subtotal', { precision: 10, scale: 2 }).notNull(),
   total: numeric('total', { precision: 10, scale: 2 }).notNull(),
+  discountAmount: numeric('discount_amount', { precision: 10, scale: 2 }).default('0'),
+  pointsEarned: integer('points_earned').default(0),
+  pointsRedeemed: integer('points_redeemed').default(0),
   alcoholConfirmed: boolean('alcohol_confirmed').default(false),
   createdAt: timestamp('created_at').defaultNow(),
 })
@@ -73,4 +87,14 @@ export const orderItems = pgTable('order_items', {
     added?: { name: string; price: number }[]
   }>(),
   notes: text('notes'),
+})
+
+export const pointsLedger = pgTable('points_ledger', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  customerId: uuid('customer_id').notNull().references(() => customers.id),
+  orderId: uuid('order_id').references(() => orders.id),
+  delta: integer('delta').notNull(),
+  balanceAfter: integer('balance_after').notNull(),
+  type: text('type').notNull(), // 'earn' | 'redeem'
+  createdAt: timestamp('created_at').defaultNow(),
 })

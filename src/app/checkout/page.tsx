@@ -3,7 +3,8 @@ import { useState, useEffect, useRef } from 'react'
 import { useCart } from '@/store/cart'
 import { useRouter } from 'next/navigation'
 import { formatPrice } from '@/lib/utils'
-import { ArrowLeft, ShieldCheck, Loader2, MapPin } from 'lucide-react'
+import { REWARDS, calcMaxRedeemablePoints, pointsToDollars } from '@/lib/rewards'
+import { ArrowLeft, ShieldCheck, Loader2, MapPin, Star } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -71,9 +72,18 @@ export default function CheckoutPage() {
   const [clientSecret, setClientSecret] = useState<string | null>(null)
   const [orderId, setOrderId] = useState('')
   const [prewarming, setPrewarming] = useState(true)
+
+  const [customer, setCustomer] = useState<{ id: string; name: string; totalPoints: number } | null>(null)
+  const [redeemPoints, setRedeemPoints] = useState(false)
+  const [updatingDiscount, setUpdatingDiscount] = useState(false)
+
   const prewarmed = useRef(false)
 
-  // Pre-warm: fire PI creation immediately on mount, don't wait for name
+  const redeemablePoints = customer ? calcMaxRedeemablePoints(customer.totalPoints, total) : 0
+  const discountAmount = redeemPoints ? pointsToDollars(redeemablePoints) : 0
+  const displayTotal = Math.max(0.5, total - discountAmount)
+
+  // Pre-warm PaymentIntent on mount
   useEffect(() => {
     if (prewarmed.current || items.length === 0 || !venueId) return
     prewarmed.current = true
@@ -94,13 +104,45 @@ export default function CheckoutPage() {
       .finally(() => setPrewarming(false))
   }, [items, total, venueId, tableNumber, tableId])
 
+  // Debounced phone lookup
+  useEffect(() => {
+    const phone = customerPhone.trim()
+    if (phone.length < 8) {
+      setCustomer(null)
+      setRedeemPoints(false)
+      return
+    }
+    const timer = setTimeout(async () => {
+      const res = await fetch(`/api/customer?phone=${encodeURIComponent(phone)}`)
+      const { customer: found } = await res.json()
+      setCustomer(found)
+      if (found?.name) setCustomerName(n => n || found.name)
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [customerPhone])
+
   if (items.length === 0) {
     router.push('/cart')
     return null
   }
 
+  async function handleRedeemToggle(checked: boolean) {
+    if (!orderId || updatingDiscount) return
+    setUpdatingDiscount(true)
+    const newTotal = checked
+      ? Math.max(0.5, total - pointsToDollars(redeemablePoints))
+      : total
+    await fetch('/api/update-payment-intent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId, newTotal }),
+    })
+    setRedeemPoints(checked)
+    setUpdatingDiscount(false)
+  }
+
   async function handlePaymentSuccess(piId: string) {
-    await fetch('/api/confirm-order', {
+    const res = await fetch('/api/confirm-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -108,10 +150,18 @@ export default function CheckoutPage() {
         paymentIntentId: piId,
         customerName: customerName.trim() || 'Guest',
         customerPhone,
+        pointsRedeemed: redeemPoints ? redeemablePoints : 0,
+        discountAmount: redeemPoints ? pointsToDollars(redeemablePoints) : 0,
       }),
     })
+    const { pointsEarned, newBalance } = await res.json()
     clearCart()
-    router.push(`/order-confirmed?orderId=${orderId}&table=${tableNumber}`)
+    const params = new URLSearchParams({ orderId, table: tableNumber })
+    if (pointsEarned) {
+      params.set('pointsEarned', String(pointsEarned))
+      params.set('newBalance', String(newBalance))
+    }
+    router.push(`/order-confirmed?${params}`)
   }
 
   const canPay = customerName.trim().length > 0 && (!hasAlcohol || alcoholConfirmed)
@@ -135,7 +185,7 @@ export default function CheckoutPage() {
             <MapPin className="w-5 h-5 text-black" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ordering from</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Ordering from</p>
             <p className="text-lg font-black text-gray-900">Table {tableNumber}</p>
           </div>
         </div>
@@ -154,9 +204,15 @@ export default function CheckoutPage() {
               </span>
             </div>
           ))}
+          {redeemPoints && (
+            <div className="flex justify-between text-sm text-green-600 mt-1">
+              <span>Points discount ({redeemablePoints} pts)</span>
+              <span>-{formatPrice(pointsToDollars(redeemablePoints))}</span>
+            </div>
+          )}
           <div className="border-t border-gray-100 mt-3 pt-3 flex justify-between font-bold text-base">
             <span>Total</span>
-            <span style={{ color: '#d4960a' }}>{formatPrice(total)}</span>
+            <span style={{ color: '#d4960a' }}>{formatPrice(displayTotal)}</span>
           </div>
         </div>
 
@@ -175,10 +231,55 @@ export default function CheckoutPage() {
             type="tel"
             value={customerPhone}
             onChange={e => setCustomerPhone(e.target.value)}
-            placeholder="Phone number (optional)"
+            placeholder="Phone number — earn reward points"
             className="w-full border-2 border-gray-200 rounded-xl px-4 py-3 text-base outline-none transition-colors focus:border-[#F9BA0B]"
           />
         </div>
+
+        {/* Rewards card — shown after phone lookup */}
+        {customer !== null && customer.totalPoints > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-0.5">Your Rewards</p>
+                <p className="text-xl font-black text-gray-900">{customer.totalPoints.toLocaleString()} pts</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {redeemablePoints >= REWARDS.MIN_POINTS
+                    ? `$${pointsToDollars(redeemablePoints).toFixed(2)} available to redeem`
+                    : `${REWARDS.MIN_POINTS - customer.totalPoints} more points until you can redeem`}
+                </p>
+              </div>
+              <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F9BA0B' }}>
+                <Star className="w-5 h-5 text-black fill-black" />
+              </div>
+            </div>
+
+            {redeemablePoints >= REWARDS.MIN_POINTS && (
+              <button
+                onClick={() => handleRedeemToggle(!redeemPoints)}
+                disabled={updatingDiscount}
+                className="w-full flex items-center justify-between rounded-xl px-4 py-3 transition-colors"
+                style={{ backgroundColor: redeemPoints ? '#FEF9D3' : '#f3f4f6', border: redeemPoints ? '1.5px solid #F9BA0B' : '1.5px solid transparent' }}
+              >
+                <span className="text-sm font-semibold text-gray-900">
+                  Apply ${pointsToDollars(redeemablePoints).toFixed(2)} discount
+                </span>
+                <div className="flex items-center gap-2">
+                  {updatingDiscount && <Loader2 className="w-3.5 h-3.5 animate-spin text-gray-400" />}
+                  <div
+                    className="relative w-11 h-6 rounded-full transition-colors flex-shrink-0"
+                    style={{ backgroundColor: redeemPoints ? '#F9BA0B' : '#d1d5db' }}
+                  >
+                    <div
+                      className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200"
+                      style={{ transform: redeemPoints ? 'translateX(22px)' : 'translateX(2px)' }}
+                    />
+                  </div>
+                </div>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Alcohol confirmation */}
         {hasAlcohol && (
@@ -198,7 +299,7 @@ export default function CheckoutPage() {
           </div>
         )}
 
-        {/* Payment — loads immediately, disabled until name filled */}
+        {/* Payment */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <div className="flex items-center gap-2 mb-4">
             <ShieldCheck className="w-4 h-4 text-green-500" />
@@ -221,7 +322,7 @@ export default function CheckoutPage() {
                 },
               }}
             >
-              <PayForm onSuccess={handlePaymentSuccess} disabled={!canPay} total={total} />
+              <PayForm onSuccess={handlePaymentSuccess} disabled={!canPay} total={displayTotal} />
             </Elements>
           ) : (
             <p className="text-sm text-red-500 text-center py-4">
